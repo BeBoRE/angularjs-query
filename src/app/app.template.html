@@ -1,0 +1,23 @@
+<button ng-init="tab = 'posts'" ng-click="tab = 'posts'">Posts</button>
+<button ng-click="tab = 'about'">Create Post</button>
+
+<div ng-if="tab === 'posts'">
+  <posts-tab></posts-tab>
+</div>
+<div ng-if="tab === 'about'">
+  <form ng-submit="onSubmit()">
+    <div>
+      <label
+        >Name:
+        <input type="text" ng-model="data.title" />
+      </label>
+    </div>
+    <div>
+      <label
+        >Body:
+        <textarea ng-model="data.body" rows="10"></textarea>
+      </label>
+    </div>
+    <button type="submit">Create</button>
+  </form>
+</div>

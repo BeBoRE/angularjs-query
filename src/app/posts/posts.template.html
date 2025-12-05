@@ -1,0 +1,17 @@
+<div ng-switch="vm.posts.status">
+  <div ng-switch-when="pending">loading...</div>
+  <div ng-switch-when="success">
+    <button ng-click="vm.posts.refetch()">Refetch</button>
+    <article ng-repeat="post in vm.posts.data">
+      <h2>{{post.title}}</h2>
+      <p>{{post.body}}</p>
+    </article>
+  </div>
+</div>
+<query data="posts" fetcher="fetchPosts">
+  <query-pending>Loading user...</query-pending>
+  <query-success>
+    <p>{{posts}}</p>
+  </query-success>
+  <query-error>Failed to load user.</query-error>
+</query>

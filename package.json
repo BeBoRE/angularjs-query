@@ -1,0 +1,22 @@
+{
+  "name": "vite-ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/angular-animate": "^1.5.14",
+    "angular-animate": "^1.8.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.0"
+  },
+  "dependencies": {
+    "@tanstack/query-core": "^5.90.6",
+    "@types/angular": "^1.8.9",
+    "angular": "^1.8.3"
+  }
+}
