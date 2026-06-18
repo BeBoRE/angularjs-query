@@ -1,46 +1,51 @@
 import {
   QueryClient,
   MutationObserver,
-  MutationOptions,
-  MutationFunction,
+  MutationObserverOptions,
+  MutationObserverResult,
+  DefaultError,
 } from "@tanstack/query-core";
-import angular, { IRootScopeService, IScope } from "angular";
+import angular, { IScope } from "angular";
 import { queryClientModule } from "./queryClient";
 
-export const mutationModule = angular
-  .module("mutationModule", [queryClientModule])
-  .factory(
-    "mutation",
-    function ($rootScope: IRootScopeService, queryClient: QueryClient) {
-      return function (
-        scope: IScope,
-        mutationFn: MutationFunction,
-        mutationOptions: Omit<MutationOptions, "mutationFn">
-      ) {
-        const observer = new MutationObserver(queryClient, {
-          mutationFn,
-          ...mutationOptions,
-        });
-        const result = observer.getCurrentResult();
-        const unsub = observer.subscribe((r) => {
-          Object.assign(result, r);
-          $rootScope.$applyAsync();
-        });
+export type MutationService = ReturnType<typeof mutationFactory>;
 
-        $rootScope.$destroy = () => {
-          unsub();
-        };
+mutationFactory.$inject = ["queryClient"];
+function mutationFactory(queryClient: QueryClient) {
+  return function useMutation<
+    TData = unknown,
+    TError = DefaultError,
+    TVariables = void,
+    TContext = unknown
+  >(
+    scope: IScope,
+    options: MutationObserverOptions<TData, TError, TVariables, TContext>
+  ): MutationObserverResult<TData, TError, TVariables, TContext> {
+    const observer = new MutationObserver(queryClient, options);
 
-        scope.$on("$destory", () => {
-          unsub();
-        });
+    const result = observer.getCurrentResult();
 
-        observer.subscribe((r) => {
-          Object.assign(result, r);
-          $rootScope.$applyAsync();
-        });
+    const unsub = observer.subscribe((r) => {
+      Object.assign(result, r);
+      scope.$applyAsync();
+    });
 
-        return result;
-      };
-    }
-  ).name;
+    scope.$on("$destroy", () => {
+      unsub();
+    });
+
+    return result as MutationObserverResult<
+      TData,
+      TError,
+      TVariables,
+      TContext
+    >;
+  };
+}
+
+const mutationModule = "mutationModule";
+export default mutationModule;
+
+angular
+  .module(mutationModule, [queryClientModule])
+  .factory("useMutation", mutationFactory);

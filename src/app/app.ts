@@ -1,37 +1,34 @@
 import angular from "angular";
 import "./services/query";
 import { queryClientModule } from "./services/queryClient";
-import { queryModule } from "./services/query";
-import { mutationModule } from "./services/mutation";
+import mutationModule, { MutationService } from "./services/mutation";
 import appTemplate from "./app.template.html";
 import { postsTabModule } from "./posts/posts.component";
-import { addPost, fetchPosts } from "./data/data";
+import { Post, addPost, fetchPosts } from "./data/data";
+import { QueryClient } from "@tanstack/query-core";
 
 export const app = angular
-  .module("appModule", [
-    queryClientModule,
-    queryModule,
-    mutationModule,
-    postsTabModule,
-  ])
+  .module("appModule", [queryClientModule, mutationModule, postsTabModule])
   .component("app", {
-    controller: function (query, mutation, $scope, queryClient) {
+    controller: function (
+      useMutation: MutationService,
+      $scope,
+      queryClient: QueryClient
+    ) {
       $scope.data = {};
 
       $scope.fetchPosts = fetchPosts;
 
-      const { mutate } = mutation($scope, addPost, {
+      $scope.addPost = useMutation($scope, {
+        mutationFn: (data: Post) => addPost(data),
         onSettled: () => {
-          queryClient.invalidateQueries(["posts"]);
+          queryClient.cancelQueries({ queryKey: ["posts"] });
+          queryClient.invalidateQueries({ queryKey: ["posts"] });
         },
         onSuccess: () => {
           $scope.data = {};
         },
       });
-
-      $scope.onSubmit = function () {
-        mutate($scope.data);
-      };
     },
     templateUrl: appTemplate,
   });

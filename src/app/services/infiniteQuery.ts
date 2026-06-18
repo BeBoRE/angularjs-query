@@ -1,37 +1,36 @@
 import {
   DefaultError,
+  InfiniteQueryObserver,
+  InfiniteQueryObserverOptions,
   QueryClient,
   QueryKey,
-  QueryObserver,
-  QueryObserverOptions,
 } from "@tanstack/query-core";
 import angular, { IScope } from "angular";
 import { queryClientModule } from "./queryClient";
-import NgAnimate from "angular-animate";
 
-export type QueryService = ReturnType<typeof queryFactory>;
+export type InfiniteQuery = ReturnType<typeof infiniteQueryFactory>;
 
-queryFactory.$inject = ["queryClient"];
-function queryFactory(queryClient: QueryClient) {
+infiniteQueryFactory.$inject = ["queryClient"];
+function infiniteQueryFactory(queryClient: QueryClient) {
   return function <
     TQueryFnData = unknown,
     TError = DefaultError,
     TData = TQueryFnData,
-    TQueryData = TQueryFnData,
-    TQueryKey extends QueryKey = QueryKey
+    TQueryKey extends QueryKey = QueryKey,
+    TPageParam = unknown
   >(
     scope: IScope,
-    optionsGetter: () => QueryObserverOptions<
+    optionsGetter: () => InfiniteQueryObserverOptions<
       TQueryFnData,
       TError,
       TData,
-      TQueryData,
-      TQueryKey
+      TQueryKey,
+      TPageParam
     >
   ) {
     const initialOptions = optionsGetter();
 
-    const observer = new QueryObserver(queryClient, initialOptions);
+    const observer = new InfiniteQueryObserver(queryClient, initialOptions);
     const result = observer.getCurrentResult();
 
     let isObserved = false;
@@ -50,6 +49,7 @@ function queryFactory(queryClient: QueryClient) {
       );
 
       const unsub = observer.subscribe((r) => {
+        console.log(r);
         Object.assign(result, r);
         scope.$applyAsync();
       });
@@ -60,7 +60,7 @@ function queryFactory(queryClient: QueryClient) {
     };
 
     return new Proxy(result, {
-      get(target, prop, receiver) {
+      get(_target, prop, receiver) {
         // 1. Kick off the subscription on the very first read
         startQuery();
 
@@ -74,10 +74,9 @@ function queryFactory(queryClient: QueryClient) {
   };
 }
 
-const queryModule = "queryModule";
-
-export default queryModule;
-
+const infiniteQueryModule = "infiniteQuery";
 angular
-  .module(queryModule, [queryClientModule, NgAnimate])
-  .factory("query", queryFactory);
+  .module(infiniteQueryModule, [queryClientModule])
+  .factory("infiniteQuery", infiniteQueryFactory);
+
+export default infiniteQueryModule;

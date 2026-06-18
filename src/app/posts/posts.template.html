@@ -2,9 +2,18 @@
   <div ng-switch-when="pending">loading...</div>
   <div ng-switch-when="success">
     <button ng-click="vm.posts.refetch()">Refetch</button>
+    <input type="text" ng-model="vm.searchInput" />
     <article ng-repeat="post in vm.posts.data">
       <h2>{{post.title}}</h2>
       <p>{{post.body}}</p>
     </article>
+    <button
+      ng-if="vm.posts.hasNextPage"
+      ng-disabled="vm.posts.isFetchingNextPage"
+      ng-click="vm.posts.fetchNextPage()"
+    >
+      Next page
+    </button>
+    <p ng-if="!vm.posts.hasNextPage">Nothing more to see</p>
   </div>
 </div>
