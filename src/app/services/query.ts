@@ -22,7 +22,7 @@ export function queryFactory(
 
     const result = observer.getCurrentResult();
     const unsub = observer.subscribe((r) => {
-      Object.assign(result, r);
+      angular.copy(r, result);
       scope.$applyAsync();
     });
 
